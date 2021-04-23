@@ -7,7 +7,7 @@ from deeprl.infrastructure.replay_buffer import ReplayBuffer
 
 class PGAgent(BaseAgent):
     def __init__(self, env, agent_params):
-        super(PGAgent, self).__init__()
+        super().__init__()
 
         # init vars
         self.env = env
@@ -89,7 +89,7 @@ class PGAgent(BaseAgent):
             """
             TODO: compute advantage estimates using q_values and baselines
             """
-            advantages = None
+            advantages = q_values - baselines
             """
             END CODE
             """
@@ -130,7 +130,11 @@ class PGAgent(BaseAgent):
         TODO: Return a numpy array containing the returns for this trajectory.
         All entries in this array should be identical.
         """
-        discounted_returns = None
+        discount_sum = 0; discounts = []
+        for i in range(len(rewards)):
+            discount_sum += rewards[i] * self.gamma ** i
+            #discounts = [discount_sum] + discounts
+        list_of_discounted_returns = np.array([discount_sum] * len(rewards))
         """
         END CODE
         """
@@ -149,7 +153,12 @@ class PGAgent(BaseAgent):
         indices [t, T] instead of [0, T].
         Using a for loop is fine, no need to vectorize this (though you can).
         """
-        list_of_discounted_cumsums = None
+        discount_sum = 0; discounts = []
+        for i in range(len(rewards) - 1, -1, -1):
+            discount_sum = rewards[i] + self.gamma * discount_sum
+            discounts = [discount_sum] + discounts
+        
+        list_of_discounted_cumsums = np.array(discounts)
         """
         END CODE
         """

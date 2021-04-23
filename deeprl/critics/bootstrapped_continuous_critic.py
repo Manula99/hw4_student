@@ -74,7 +74,9 @@ class BootstrappedContinuousCritic(nn.Module, BaseCritic):
         HINT: make sure to squeeze the output of the critic_network to ensure
               that its dimensions match the reward
         """
-        target_value = None
+        #print(terminals); #print(next_obs)
+        #mask = [ob in terminals for ob in next_obs]
+        target_value = (self.gamma*self.forward(next_obs, actor(next_obs).sample())* 0**terminals + rewards) 
         """
         END CODE
         """
@@ -87,6 +89,10 @@ class BootstrappedContinuousCritic(nn.Module, BaseCritic):
         where alpha is self.target_update_rate.
         """
         # your code here
+        with torch.no_grad():
+            for p_target, p_current in zip(self.target_network.parameters(), self.critic_network.parameters()):
+                new_val = (1 - self.target_update_rate) * p_target + self.target_update_rate * p_current
+                p_target.copy_(new_val)
         """
         END CODE
         """

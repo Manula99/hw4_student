@@ -138,7 +138,8 @@ class MLPPolicySL(MLPPolicy):
         expert actions under the policy.
         Hint: look at the documentation for torch.distributions 
         """
-        loss = None
+        loss = -torch.mean(self.forward(observations).log_prob(actions))
+        
         """
         END CODE
         """
@@ -167,7 +168,7 @@ class MLPPolicyPG(MLPPolicy):
         """
         TODO: compute the policy gradient given already compute advantages adv_n
         """
-        loss = None
+        loss = -torch.mean(self.forward(observations).log_prob(actions) * adv_n)
         """
         END CODE
         """
@@ -183,7 +184,9 @@ class MLPPolicyPG(MLPPolicy):
             TODO: update the baseline value function by regressing to the values
             Hint: see self.baseline_loss for the appropriate loss
             """
-            baseline_loss = None
+            #adv_n.requires_grad = True
+            baseline_loss = self.baseline_loss(self.baseline(observations).squeeze(), targets_n) 
+            #print(baseline_loss)
             """
             END CODE
             """
@@ -214,7 +217,7 @@ class MLPPolicyAC(MLPPolicy):
         if self.discrete:
             return super(MLPPolicyAC).forward(observations)
         else:
-            base_dist = super(MLPPolicyAC, self).forward(observations)
+            base_dist = super().forward(observations)
             # for AC methods, we need to ensure actions sampled from the env
             # are valid actions for the environment. 
             # Since the action spaces are bounded between [-1, 1], we apply
@@ -233,7 +236,9 @@ class MLPPolicyAC(MLPPolicy):
         distributions, look at the rsample function to differentiate through 
         samples from the action distribution.
         """
-        loss = None
+        dist = self.forward(observations)
+        actions = dist.rsample()
+        loss = -torch.mean(critic(observations, actions))
         """
         END CODE
         """
